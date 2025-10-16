@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DRAGON'S BREATH - OYATE POTTERY</title>
+  <meta name="description" content="DRAGON'S BREATH pottery by Robert Mohler - An experimental RAKU variation with temperature variations creating stunning textures." />
+  <link rel="stylesheet" href="shared/styles.css">
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div>
+        <h1>OYATE POTTERY</h1>
+        <div class="subtitle">PITFIRE • RAKU</div>
+      </div>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="raku.html">RAKU</a>
+        <a href="naked-raku.html">NAKED RAKU</a>
+        <a href="ferric-chloride.html">FERRIC CHLORIDE</a>
+        <a href="dragon-breath.html">DRAGON'S BREATH</a>
+        <a href="pitfire.html">PITFIRE</a>
+        <a href="reference.html">REFERENCE</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="breadcrumb">
+    <a href="index.html">Home</a> > DRAGON'S BREATH
+  </div>
+
+  <div class="page-content">
+    <h2>DRAGON'S BREATH</h2>
+    <p>DRAGON'S BREATH is essentially the same process as RAKU. The difference lies in the firing temperature, varying the temperature +/- 2-300 degrees (F) the results take on a different texture. This is highly experimental and honestly produces its share of failures, but the successful results can be stunning.</p>
+  </div>
+
+  <main id="gallery" class="grid" aria-label="DRAGON'S BREATH Photo gallery">
+    <!-- Gallery will be populated by JavaScript -->
+  </main>
+
+  <footer>
+    <div class="credit">
+      © <span id="year"></span> Robert Mohler - OYATE POTTERY. All rights reserved.
+    </div>
+  </footer>
+
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
+    <button class="close" id="btnClose" aria-label="Close">✕</button>
+    <button class="prev" id="btnPrev" aria-label="Previous">‹</button>
+    <img id="lightboxImg" alt="" />
+    <button class="next" id="btnNext" aria-label="Next">›</button>
+    <div class="meta">
+      <div class="caption" id="lightboxCaption"></div>
+    </div>
+  </div>
+
+  <script>
+    // DRAGON'S BREATH images
+    const IMAGES = [
+      ["images/dragon-breath/5895857606546621827.jpg", "DRAGON'S BREATH Experimental"],
+      ["images/dragon-breath/590028722699413159.jpg", "DRAGON'S BREATH Texture"],
+      ["images/dragon-breath/6273304653145780015.jpg", "DRAGON'S BREATH Vessel"],
+    ];
+
+    const yearEl = document.getElementById('year');
+    yearEl.textContent = new Date().getFullYear();
+
+    const grid = document.querySelector('.grid');
+
+    function filenameToCaption(path) { 
+      const name = path.split('/').pop().replace(/[-_]/g, ' ').replace(/\.\w+$/, '');
+      return name.charAt(0).toUpperCase() + name.slice(1);
+    }
+
+    // Render cards
+    function render(images, captionsOverride) { 
+      grid.innerHTML = '';
+      images.forEach(([src, caption], idx) => {
+        const fig = document.createElement('figure');
+        fig.className = 'card';
+        fig.dataset.idx = idx;
+        const img = document.createElement('img');
+        img.loading = 'lazy';
+        img.src = src;
+        img.alt = (captionsOverride[src] || caption || filenameToCaption(src));
+        const fc = document.createElement('figcaption');
+        fc.textContent = img.alt;
+        fig.appendChild(img);
+        fig.appendChild(fc);
+        grid.appendChild(fig);
+      });
+    }
+
+    async function loadCaptions() {
+      try {
+        const r = await fetch('captions.json', { cache: 'no-store' });
+        if (!r.ok) return {};
+        return await r.json();
+      } catch(e) { return {}; }
+    }
+
+    (async function init() {
+      const caps = await loadCaptions();
+      render(IMAGES, caps);
+    })();
+
+    // Lightweight lightbox
+    const lb = document.getElementById('lightbox');
+    const lbImg = document.getElementById('lightboxImg');
+    const lbCap = document.getElementById('lightboxCaption');
+    const btnClose = document.getElementById('btnClose');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    let current = 0;
+
+    function openAt(idx) { 
+      current = idx;
+      const cards = Array.from(document.querySelectorAll('.card'));
+      const card = cards[current];
+      const img = card.querySelector('img');
+      lbImg.src = img.src;
+      lbImg.alt = img.alt;
+      lbCap.textContent = img.alt;
+      lb.classList.add('open');
+    }
+    function close() { lb.classList.remove('open'); }
+    function prev() { if (current > 0) openAt(current - 1); }
+    function next() { const cards = document.querySelectorAll('.card'); if (current < cards.length - 1) openAt(current + 1); }
+
+    document.addEventListener('click', (e) => {
+      const card = e.target.closest('.card');
+      if (card) { openAt(parseInt(card.dataset.idx, 10)); }
+      if (e.target === lb) { close(); }
+    });
+    btnClose.addEventListener('click', close);
+    btnPrev.addEventListener('click', prev);
+    btnNext.addEventListener('click', next);
+    document.addEventListener('keydown', (e) => {
+      if (!lb.classList.contains('open')) return;
+      if (e.key === 'Escape') close();
+      if (e.key === 'ArrowLeft') prev();
+      if (e.key === 'ArrowRight') next();
+    });
+  </script>
+</body>
+</html>
