@@ -52,6 +52,7 @@
     </div>
   </div>
 
+  <script src="site-config.js"></script>
   <script>
     // PITFIRE images
     const IMAGES = [
@@ -76,8 +77,10 @@
       return name.charAt(0).toUpperCase() + name.slice(1);
     }
 
+    const cfg = typeof SITE_CONFIG !== 'undefined' ? SITE_CONFIG : {};
+
     // Render cards
-    function render(images, captionsOverride) { 
+    function render(images, captionsOverride) {
       grid.innerHTML = '';
       images.forEach(([src, caption], idx) => {
         const fig = document.createElement('figure');
@@ -87,10 +90,12 @@
         img.loading = 'lazy';
         img.src = src;
         img.alt = (captionsOverride[src] || caption || filenameToCaption(src));
-        const fc = document.createElement('figcaption');
-        fc.textContent = img.alt;
         fig.appendChild(img);
-        fig.appendChild(fc);
+        if (cfg.showGalleryCaptions !== false) {
+          const fc = document.createElement('figcaption');
+          fc.textContent = img.alt;
+          fig.appendChild(fc);
+        }
         grid.appendChild(fig);
       });
     }
@@ -124,7 +129,7 @@
       const img = card.querySelector('img');
       lbImg.src = img.src;
       lbImg.alt = img.alt;
-      lbCap.textContent = img.alt;
+      lbCap.textContent = cfg.showLightboxCaptions !== false ? img.alt : '';
       lb.classList.add('open');
     }
     function close() { lb.classList.remove('open'); }

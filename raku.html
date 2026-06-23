@@ -52,17 +52,16 @@
     </div>
   </div>
 
+  <script src="site-config.js"></script>
   <script>
     // RAKU images
     const IMAGES = [
       ["images/raku/1106733678000139484.jpg", "RAKU Tea Bowl"],
       ["images/raku/1114283498481406115.jpg", "RAKU Vase with Copper Glaze"],
       ["images/raku/184586342315640286.jpg", "RAKU Sculptural Piece"],
-      ["images/raku/2045812011712992791.jpg", "RAKU Bowl with Crackle Glaze"],
       ["images/raku/2168014694902991453.jpg", "RAKU Vessel with Metallic Finish"],
       ["images/raku/2276309247284030389.jpg", "RAKU Tea Set"],
       ["images/raku/234428678903918281.jpg", "RAKU Sculpture"],
-      ["images/raku/4108222817952299692.jpg", "RAKU Bowl with Copper Red"],
       ["images/raku/4129999528225821263.jpg", "RAKU Vase with Crackle"],
       ["images/raku/4482736545899957965.jpg", "RAKU Tea Bowl"],
       ["images/raku/4804088775315127313.jpg", "RAKU Sculptural Vessel"],
@@ -71,15 +70,12 @@
       ["images/raku/5566227492094215519.jpg", "RAKU Tea Set"],
       ["images/raku/5612162396171402489.jpg", "RAKU Sculpture"],
       ["images/raku/5640503404084791265.jpg", "RAKU Bowl with Crackle"],
-      ["images/raku/5753321454188056938.jpg", "RAKU Vessel"],
       ["images/raku/6139200577139760344.jpg", "RAKU Tea Bowl"],
-      ["images/raku/6266006434706534201.jpg", "RAKU Sculptural Piece"],
       ["images/raku/6597913808106303235.jpg", "RAKU Vase with Metallic Finish"],
       ["images/raku/6785514192817292665.jpg", "RAKU Bowl"],
       ["images/raku/7611603653448448494.jpg", "RAKU Tea Set"],
       ["images/raku/8412281623682977440.jpg", "RAKU Vessel with Copper"],
       ["images/raku/8626269158422559381.jpg", "RAKU Sculpture"],
-      ["images/raku/9077549100521733743.jpg", "RAKU Bowl with Crackle Glaze"],
     ];
 
     const yearEl = document.getElementById('year');
@@ -92,8 +88,10 @@
       return name.charAt(0).toUpperCase() + name.slice(1);
     }
 
+    const cfg = typeof SITE_CONFIG !== 'undefined' ? SITE_CONFIG : {};
+
     // Render cards
-    function render(images, captionsOverride) { 
+    function render(images, captionsOverride) {
       grid.innerHTML = '';
       images.forEach(([src, caption], idx) => {
         const fig = document.createElement('figure');
@@ -103,10 +101,12 @@
         img.loading = 'lazy';
         img.src = src;
         img.alt = (captionsOverride[src] || caption || filenameToCaption(src));
-        const fc = document.createElement('figcaption');
-        fc.textContent = img.alt;
         fig.appendChild(img);
-        fig.appendChild(fc);
+        if (cfg.showGalleryCaptions !== false) {
+          const fc = document.createElement('figcaption');
+          fc.textContent = img.alt;
+          fig.appendChild(fc);
+        }
         grid.appendChild(fig);
       });
     }
@@ -140,7 +140,7 @@
       const img = card.querySelector('img');
       lbImg.src = img.src;
       lbImg.alt = img.alt;
-      lbCap.textContent = img.alt;
+      lbCap.textContent = cfg.showLightboxCaptions !== false ? img.alt : '';
       lb.classList.add('open');
     }
     function close() { lb.classList.remove('open'); }
