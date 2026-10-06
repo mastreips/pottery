@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Admin - OYATE POTTERY</title>
+  <link rel="stylesheet" href="shared/styles.css">
+  <style>
+    .admin { max-width: var(--maxw); margin: 0 auto; padding: 1rem var(--pad) 3rem; color: #fff; }
+    .panel { background: rgba(0,0,0,.72); border: 1px solid rgba(255,107,53,.3); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+    .login { max-width: 380px; margin: 3rem auto; }
+    .login label { display: block; margin-bottom: .5rem; font-weight: 600; }
+    .admin input[type=password] { width: 100%; padding: .75rem; border-radius: 8px; border: 1px solid #555; font-size: 1rem; }
+    .btn { background: var(--fire-orange); color: #fff; border: 0; border-radius: 8px; padding: .7rem 1.1rem; font-size: 1rem; font-weight: 700; cursor: pointer; }
+    .btn:hover { background: var(--fire-red); }
+    .btn.secondary { background: transparent; border: 1px solid rgba(255,255,255,.4); }
+    .btn:disabled { opacity: .5; cursor: default; }
+    .login .btn { margin-top: .75rem; width: 100%; }
+    .msg { margin-top: .75rem; min-height: 1.2em; color: var(--fire-yellow); font-weight: 600; }
+    .msg.error { color: #ff8a80; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .tabs { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0; }
+    .tab { background: rgba(255,255,255,.1); color: #fff; border: 1px solid rgba(255,255,255,.25); border-radius: 999px; padding: .5rem 1rem; cursor: pointer; font-size: .95rem; }
+    .tab.active { background: var(--fire-orange); border-color: var(--fire-orange); font-weight: 700; }
+    .drop { border: 3px dashed rgba(255,255,255,.5); border-radius: 12px; padding: 2rem 1rem; text-align: center; cursor: pointer; transition: background .15s, border-color .15s; }
+    .drop.over { background: rgba(255,107,53,.25); border-color: var(--fire-orange); }
+    .drop strong { display: block; font-size: 1.15rem; margin-bottom: .25rem; }
+    .drop span { color: #ccc; font-size: .9rem; }
+    .uploads { margin-top: .75rem; display: grid; gap: .4rem; }
+    .upl { font-size: .9rem; background: rgba(255,255,255,.08); border-radius: 6px; padding: .4rem .6rem; display: flex; justify-content: space-between; gap: 1rem; }
+    .upl.err { color: #ff8a80; }
+    .upl.ok { color: #a5d6a7; }
+    .photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--gap); margin-top: 1rem; }
+    .photo { position: relative; aspect-ratio: 1; border-radius: 10px; overflow: hidden; background: #111; }
+    .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .photo .x { position: absolute; top: 6px; right: 6px; width: 32px; height: 32px; border-radius: 50%; border: 0; background: rgba(0,0,0,.75); color: #fff; font-size: 1.1rem; line-height: 1; cursor: pointer; }
+    .photo .x:hover { background: var(--fire-red); }
+    .count { color: #ccc; margin: 1rem 0 0; }
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,.75); display: none; align-items: center; justify-content: center; z-index: 500; padding: 1rem; }
+    .modal.open { display: flex; }
+    .modal .box { background: #1b1b1b; border: 1px solid rgba(255,107,53,.5); border-radius: 12px; padding: 1.25rem; max-width: 360px; width: 100%; text-align: center; }
+    .modal img { width: 160px; height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: .75rem; }
+    .modal .row { display: flex; gap: .75rem; justify-content: center; margin-top: 1rem; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>OYATE POTTERY</h1>
+      <nav><a href="index.html">VIEW SITE</a></nav>
+    </div>
+  </header>
+
+  <main class="admin">
+    <section id="loginView" class="panel login hidden">
+      <h2 style="margin-top:0">Admin Login</h2>
+      <form id="loginForm">
+        <label for="password">Password</label>
+        <input id="password" type="password" autocomplete="current-password" required />
+        <button class="btn" type="submit">Log in</button>
+        <div class="msg" id="loginMsg" role="alert"></div>
+      </form>
+    </section>
+
+    <section id="appView" class="hidden">
+      <div class="panel">
+        <div class="topbar">
+          <h2 style="margin:0">Manage Photos</h2>
+          <button class="btn secondary" id="logout" type="button">Log out</button>
+        </div>
+        <div class="tabs" id="tabs" role="tablist"></div>
+        <div class="drop" id="drop" tabindex="0" role="button" aria-label="Add photos">
+          <strong>Drag photos here or click to choose</strong>
+          <span>JPG, PNG or WebP. You can add several at once.</span>
+        </div>
+        <input id="file" type="file" accept="image/jpeg,image/png,image/webp" multiple class="hidden" />
+        <div class="uploads" id="uploads"></div>
+        <div class="msg" id="appMsg" role="alert"></div>
+        <p class="count" id="count"></p>
+        <div class="photos" id="photos"></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal" id="confirm" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <div class="box">
+      <img id="confirmImg" alt="" />
+      <h3 id="confirmTitle" style="margin:0 0 .25rem">Delete this photo?</h3>
+      <p style="margin:0;color:#ccc">This will remove it from the website.</p>
+      <div class="row">
+        <button class="btn secondary" id="confirmCancel" type="button">Cancel</button>
+        <button class="btn" id="confirmDelete" type="button">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const CATEGORIES = [
+      ['raku', 'Raku'],
+      ['naked-raku', 'Naked Raku'],
+      ['ferric-chloride', 'Ferric Chloride'],
+      ['dragon-breath', "Dragon's Breath"],
+      ['pitfire', 'Pitfire'],
+      ['other-methods', 'Other Miscellaneous Methods']
+    ];
+    const MAX_SIDE = 1600;
+    const MAX_BYTES = 3.8 * 1024 * 1024;
+
+    const $ = (id) => document.getElementById(id);
+    let category = CATEGORIES[0][0];
+    let pendingDelete = null;
+
+    async function api(path, opts) {
+      const r = await fetch(path, Object.assign({ credentials: 'same-origin' }, opts));
+      let data = {};
+      try { data = await r.json(); } catch (e) {}
+      if (r.status === 401 && path !== '/api/login') { showLogin(); }
+      if (!r.ok) throw new Error(data.error || 'Something went wrong. Please try again.');
+      return data;
+    }
+
+    function setMsg(el, text, isError) { el.textContent = text || ''; el.classList.toggle('error', !!isError); }
+
+    function showLogin() { $('appView').classList.add('hidden'); $('loginView').classList.remove('hidden'); $('password').focus(); }
+    function showApp() { $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden'); loadCategory(); }
+
+    $('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      setMsg($('loginMsg'), '');
+      try {
+        await api('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: $('password').value }) });
+        $('password').value = '';
+        showApp();
+      } catch (err) { setMsg($('loginMsg'), err.message, true); }
+    });
+
+    $('logout').addEventListener('click', async () => {
+      try { await api('/api/logout', { method: 'POST' }); } catch (e) {}
+      showLogin();
+    });
+
+    function renderTabs() {
+      $('tabs').innerHTML = '';
+      CATEGORIES.forEach(([slug, label]) => {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'tab' + (slug === category ? ' active' : ''); b.textContent = label;
+        b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', slug === category);
+        b.addEventListener('click', () => { category = slug; setMsg($('appMsg'), ''); $('uploads').innerHTML = ''; renderTabs(); loadCategory(); });
+        $('tabs').appendChild(b);
+      });
+    }
+
+    function renderPhotos(images) {
+      $('count').textContent = images.length + (images.length === 1 ? ' photo' : ' photos') + ' on this page';
+      $('photos').innerHTML = '';
+      images.forEach(([src, caption]) => {
+        const d = document.createElement('div'); d.className = 'photo';
+        const img = document.createElement('img'); img.src = src; img.alt = caption || ''; img.loading = 'lazy';
+        const x = document.createElement('button'); x.type = 'button'; x.className = 'x'; x.textContent = '✕';
+        x.setAttribute('aria-label', 'Delete this photo');
+        x.addEventListener('click', () => askDelete(src));
+        d.append(img, x); $('photos').appendChild(d);
+      });
+    }
+
+    async function loadCategory() {
+      try {
+        const data = await api('/api/gallery?category=' + category + '&t=' + Date.now());
+        renderPhotos(data.images);
+      } catch (err) { setMsg($('appMsg'), err.message, true); }
+    }
+
+    // ---- delete with confirmation ----
+    function askDelete(src) {
+      pendingDelete = src; $('confirmImg').src = src; $('confirm').classList.add('open'); $('confirmCancel').focus();
+    }
+    function closeConfirm() { pendingDelete = null; $('confirm').classList.remove('open'); }
+    $('confirmCancel').addEventListener('click', closeConfirm);
+    $('confirm').addEventListener('click', (e) => { if (e.target === $('confirm')) closeConfirm(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeConfirm(); });
+    $('confirmDelete').addEventListener('click', async () => {
+      const src = pendingDelete; closeConfirm(); if (!src) return;
+      try {
+        const data = await api('/api/remove', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ category, src }) });
+        renderPhotos(data.images); setMsg($('appMsg'), 'Photo deleted.');
+      } catch (err) { setMsg($('appMsg'), err.message, true); }
+    });
+
+    // ---- upload ----
+    function loadImage(file) {
+      return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file); const img = new Image();
+        img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Could not read this image.')); };
+        img.src = url;
+      });
+    }
+    function toBlob(canvas, quality) { return new Promise((res) => canvas.toBlob(res, 'image/jpeg', quality)); }
+
+    async function prepare(file) {
+      if (!/^image\/(jpeg|png|webp)$/.test(file.type)) throw new Error('Only JPG, PNG or WebP photos are allowed.');
+      const img = await loadImage(file);
+      const scale = Math.min(1, MAX_SIDE / Math.max(img.naturalWidth, img.naturalHeight));
+      if (scale === 1 && file.size <= MAX_BYTES && file.type === 'image/jpeg') return file;
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.naturalWidth * scale); c.height = Math.round(img.naturalHeight * scale);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      let q = 0.88, blob = await toBlob(c, q);
+      while (blob && blob.size > MAX_BYTES && q > 0.4) { q -= 0.12; blob = await toBlob(c, q); }
+      if (!blob || blob.size > MAX_BYTES) throw new Error('This photo is too large.');
+      return blob;
+    }
+
+    async function uploadFiles(files) {
+      setMsg($('appMsg'), '');
+      for (const file of Array.from(files)) {
+        const row = document.createElement('div'); row.className = 'upl';
+        const name = document.createElement('span'); name.textContent = file.name;
+        const status = document.createElement('span'); status.textContent = 'Uploading…';
+        row.append(name, status); $('uploads').prepend(row);
+        try {
+          const blob = await prepare(file);
+          const data = await api('/api/upload?category=' + category + '&filename=' + encodeURIComponent(file.name), { method: 'POST', headers: { 'Content-Type': blob.type }, body: blob });
+          renderPhotos(data.images); status.textContent = 'Added'; row.classList.add('ok');
+        } catch (err) { status.textContent = err.message; row.classList.add('err'); }
+      }
+    }
+
+    const drop = $('drop');
+    drop.addEventListener('click', () => $('file').click());
+    drop.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('file').click(); } });
+    $('file').addEventListener('change', (e) => { uploadFiles(e.target.files); e.target.value = ''; });
+    ['dragenter', 'dragover'].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add('over'); }));
+    ['dragleave', 'drop'].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.remove('over'); }));
+    drop.addEventListener('drop', (e) => uploadFiles(e.dataTransfer.files));
+    // Stop the browser opening a photo that is dropped outside the box.
+    ['dragover', 'drop'].forEach((t) => window.addEventListener(t, (e) => e.preventDefault()));
+
+    (async function init() {
+      renderTabs();
+      try { const s = await api('/api/login'); s.authed ? showApp() : showLogin(); } catch (e) { showLogin(); }
+    })();
+  </script>
+</body>
+</html>

@@ -100,9 +100,21 @@
       } catch(e) { return {}; }
     }
 
+    // Photos are managed from admin.html; the IMAGES array above is the fallback.
+    async function loadImages() {
+      try {
+        const r = await fetch('/api/gallery?category=other-methods');
+        if (r.ok) {
+          const data = await r.json();
+          if (Array.isArray(data.images)) return data.images;
+        }
+      } catch (e) {}
+      return IMAGES;
+    }
+
     (async function init() {
-      const caps = await loadCaptions();
-      render(IMAGES, caps);
+      const [caps, images] = await Promise.all([loadCaptions(), loadImages()]);
+      render(images, caps);
     })();
 
     // Lightweight lightbox
