@@ -1,0 +1,9 @@
+{
+  "name": "oyate-pottery",
+  "private": true,
+  "version": "1.0.0",
+  "description": "OYATE POTTERY website with admin photo manager",
+  "dependencies": {
+    "@vercel/blob": "^2.0.0"
+  }
+}

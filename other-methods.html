@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>FERRIC CHLORIDE REDUCTION - OYATE POTTERY</title>
-  <meta name="description" content="FERRIC CHLORIDE REDUCTION pottery by Robert Mohler - A toxic but beautiful technique creating pinkish red backgrounds enhanced with organic materials." />
+  <title>OTHER MISCELLANEOUS METHODS - OYATE POTTERY</title>
+  <meta name="description" content="Other miscellaneous firing methods by Robert Mohler - OYATE POTTERY." />
   <link rel="stylesheet" href="shared/styles.css">
 </head>
 <body>
@@ -25,15 +25,14 @@
   </header>
 
   <div class="breadcrumb">
-    <a href="index.html">HOME</a> > FERRIC CHLORIDE REDUCTION
+    <a href="index.html">HOME</a> > OTHER MISCELLANEOUS METHODS
   </div>
 
   <div class="page-content">
-    <h2>FERRIC CHLORIDE REDUCTION</h2>
-    <p>FERRIC CHLORIDE is extremely toxic, especially in aerosol form, so be aware that gloves and a respirator are definitely part of the process. Much like PITFIRE, FERRIC CHLORIDE provides a great background color (pinkish red) and is further enhanced using nuts, salt, chlorides and discarded fruits and vegetables.</p>
+    <h2>OTHER MISCELLANEOUS METHODS</h2>
   </div>
 
-  <main id="gallery" class="grid" aria-label="FERRIC CHLORIDE Photo gallery">
+  <main id="gallery" class="grid" aria-label="Other Miscellaneous Methods photo gallery">
     <!-- Gallery will be populated by JavaScript -->
   </main>
 
@@ -55,12 +54,9 @@
 
   <script src="site-config.js"></script>
   <script>
-    // FERRIC CHLORIDE images
+    // Other Miscellaneous Methods images
     const IMAGES = [
-      ["images/ferric-chloride/2202829890637668660.jpg", "FERRIC CHLORIDE Reduction"],
-      ["images/ferric-chloride/2427985292515315917.jpg", "FERRIC CHLORIDE with Organic Materials"],
-      ["images/ferric-chloride/2736266980335103199.jpg", "FERRIC CHLORIDE Vessel"],
-      ["images/ferric-chloride/6272726399555306458.jpg", "FERRIC CHLORIDE Bowl with Pinkish Red"],
+      ["images/other-methods/other-methods-1.jpg", "Other Miscellaneous Methods"],
     ];
 
     const yearEl = document.getElementById('year');
@@ -107,7 +103,7 @@
     // Photos are managed from admin.html; the IMAGES array above is the fallback.
     async function loadImages() {
       try {
-        const r = await fetch('/api/gallery?category=ferric-chloride');
+        const r = await fetch('/api/gallery?category=other-methods');
         if (r.ok) {
           const data = await r.json();
           if (Array.isArray(data.images)) return data.images;
