@@ -16,11 +16,10 @@ async function readManifest(cat) {
       return seed[cat] || [];
     }
   }
-  const { blobs } = await blob().list({ prefix: manifestKey(cat), limit: 1 });
-  if (!blobs.length) return seed[cat] || [];
-  const r = await fetch(`${blobs[0].url}?t=${Date.now()}`, { cache: 'no-store' });
-  if (!r.ok) throw new Error('Could not read gallery');
-  return r.json();
+  // useCache:false reads straight from origin storage so edits are never lost to a stale CDN copy.
+  const found = await blob().get(manifestKey(cat), { access: 'public', useCache: false });
+  if (!found) return seed[cat] || [];
+  return JSON.parse(await new Response(found.stream).text());
 }
 
 async function writeManifest(cat, images) {
