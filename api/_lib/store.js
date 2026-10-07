@@ -16,10 +16,14 @@ async function readManifest(cat) {
       return seed[cat] || [];
     }
   }
-  // useCache:false reads straight from origin storage so edits are never lost to a stale CDN copy.
-  const found = await blob().get(manifestKey(cat), { access: 'public', useCache: false });
-  if (!found) return seed[cat] || [];
-  return JSON.parse(await new Response(found.stream).text());
+  // Each save is a new, uniquely named file (never overwritten), so a stale CDN copy
+  // can't be served. The newest version wins.
+  const { blobs } = await blob().list({ prefix: `galleries/${cat}/`, limit: 1000 });
+  if (!blobs.length) return seed[cat] || [];
+  const latest = blobs.reduce((a, b) => (new Date(b.uploadedAt) > new Date(a.uploadedAt) ? b : a));
+  const r = await fetch(latest.url);
+  if (!r.ok) throw new Error('Could not read gallery');
+  return r.json();
 }
 
 async function writeManifest(cat, images) {
@@ -30,13 +34,15 @@ async function writeManifest(cat, images) {
     fs.writeFileSync(file, body);
     return;
   }
-  await blob().put(manifestKey(cat), body, {
+  const saved = await blob().put(`galleries/${cat}/v-${Date.now()}.json`, body, {
     access: 'public',
     contentType: 'application/json',
-    addRandomSuffix: false,
-    allowOverwrite: true,
-    cacheControlMaxAge: 60
+    addRandomSuffix: true
   });
+  // Tidy up superseded versions (best effort).
+  const { blobs } = await blob().list({ prefix: `galleries/${cat}/`, limit: 1000 });
+  const old = blobs.filter((b) => b.url !== saved.url).map((b) => b.url);
+  if (old.length) await blob().del(old).catch(() => {});
 }
 
 async function putImage(cat, filename, buffer, contentType) {
